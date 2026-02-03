@@ -150,9 +150,12 @@
     <div class="container">
         <h3 class="mb-4">Kelola Data Transaksi</h3>
 
-        <a href="/transaksi/tambah" class="btn btn-primary mb-3">
-            + Tambah Transaksi
-        </a>
+        <div class="d-flex gap-2 mb-3">
+            <a href="/transaksi/tambah" class="btn btn-primary">
+                + Tambah Transaksi
+            </a>
+            <a href="/transaksi/cetak" target="_blank" class="btn btn-info">Cetak Semua (PDF)</a>
+        </div>
 
         {% with messages = get_flashed_messages() %}
             {% if messages %}
@@ -190,6 +193,7 @@
                                 {% endif %}
                             </td>
                             <td>
+                                <a href="/transaksi/cetak/pasien/{{ t.id_pasien }}" class="btn btn-secondary btn-sm" target="_blank">Cetak Pasien</a>
                                 <a href="/transaksi/update/{{ t.id_transaksi }}" class="btn btn-info btn-sm text-white">Ubah Status</a>
                                 <a href="/transaksi/edit/{{ t.id_transaksi }}" class="btn btn-warning btn-sm">Edit</a>
                                 <a href="/transaksi/delete/{{ t.id_transaksi }}" class="btn btn-danger btn-sm" onclick="return confirm('Hapus data ini?')">Hapus</a>

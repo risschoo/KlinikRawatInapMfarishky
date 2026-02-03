@@ -116,12 +116,7 @@
 
                 <div class="mb-3">
                     <label>Nama Pasien</label>
-                    <select name="id_pasien" class="form-control" required>
-                        <option value="">-- Pilih Pasien --</option>
-                        {% for p in pasien %}
-                            <option value="{{ p.id_pasien }}">{{ p.nama }}</option>
-                        {% endfor %}
-                    </select>
+                    <input type="text" name="nama_pasien" class="form-control" placeholder="Masukkan nama pasien" required>
                 </div>
 
                 <div class="mb-3">

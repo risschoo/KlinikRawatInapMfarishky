@@ -65,6 +65,94 @@ def cetak():
     response.headers['Content-Disposition'] = 'attachment; filename=data_pasien_rawat_inap.pdf'
     return response
 
+
+@app.route('/transaksi/cetak')
+def cetak_transaksi():
+    conn = get_db_connection()
+    cursor = conn.cursor(dictionary=True)
+    cursor.execute("""
+        SELECT t.id_transaksi, t.id_pasien, p.nama, t.total_biaya, t.status_pembayaran, t.tgl
+        FROM transaksi_faris t
+        JOIN pasien_faris p ON t.id_pasien = p.id_pasien
+        ORDER BY t.id_transaksi DESC
+    """)
+    data = cursor.fetchall()
+    cursor.close()
+    conn.close()
+
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.set_font('Helvetica', '', 12)
+    pdf.set_font_size(16)
+    pdf.cell(0, 10, 'Data Transaksi', 0, 1, 'C')
+    pdf.ln(8)
+    pdf.set_font_size(11)
+    pdf.cell(25, 8, 'ID', 1, 0, 'C')
+    pdf.cell(55, 8, 'Nama Pasien', 1, 0, 'C')
+    pdf.cell(35, 8, 'Total', 1, 0, 'C')
+    pdf.cell(35, 8, 'Tanggal', 1, 0, 'C')
+    pdf.cell(30, 8, 'Status', 1, 1, 'C')
+    pdf.set_fill_color(245, 245, 245)
+    for d in data:
+        pdf.cell(25, 8, f"TRX-00{d['id_transaksi']}", 1, 0, 'C', fill=True)
+        pdf.cell(55, 8, d['nama'][:30], 1, 0, 'L', fill=True)
+        pdf.cell(35, 8, f"Rp {d['total_biaya']:,.0f}", 1, 0, 'R', fill=True)
+        pdf.cell(35, 8, str(d['tgl']), 1, 0, 'C', fill=True)
+        status = 'Lunas' if d['status_pembayaran'] else 'Belum Lunas'
+        pdf.cell(30, 8, status, 1, 1, 'C', fill=True)
+
+    pdf_bytes = pdf.output(dest='S')
+    if isinstance(pdf_bytes, bytearray):
+        pdf_bytes = bytes(pdf_bytes)
+    response = make_response(pdf_bytes)
+    response.headers['Content-Type'] = 'application/pdf'
+    response.headers['Content-Disposition'] = 'attachment; filename=data_transaksi.pdf'
+    return response
+
+
+@app.route('/transaksi/cetak/pasien/<int:id_pasien>')
+def cetak_transaksi_pasien(id_pasien):
+    conn = get_db_connection()
+    cursor = conn.cursor(dictionary=True)
+    cursor.execute("""
+        SELECT t.id_transaksi, t.id_pasien, p.nama, t.total_biaya, t.status_pembayaran, t.tgl
+        FROM transaksi_faris t
+        JOIN pasien_faris p ON t.id_pasien = p.id_pasien
+        WHERE t.id_pasien = %s
+        ORDER BY t.id_transaksi DESC
+    """, (id_pasien,))
+    data = cursor.fetchall()
+    cursor.close()
+    conn.close()
+
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.set_font('Helvetica', '', 12)
+    pdf.set_font_size(15)
+    pasien_nama = data[0]['nama'] if data else f'ID {id_pasien}'
+    pdf.cell(0, 10, f'Data Transaksi - {pasien_nama}', 0, 1, 'C')
+    pdf.ln(8)
+    pdf.set_font_size(11)
+    pdf.cell(30, 8, 'ID Trans.', 1, 0, 'C')
+    pdf.cell(50, 8, 'Tanggal', 1, 0, 'C')
+    pdf.cell(50, 8, 'Total', 1, 0, 'C')
+    pdf.cell(50, 8, 'Status', 1, 1, 'C')
+    pdf.set_fill_color(245, 245, 245)
+    for d in data:
+        pdf.cell(30, 8, f"TRX-00{d['id_transaksi']}", 1, 0, 'C', fill=True)
+        pdf.cell(50, 8, str(d['tgl']), 1, 0, 'C', fill=True)
+        pdf.cell(50, 8, f"Rp {d['total_biaya']:,.0f}", 1, 0, 'R', fill=True)
+        status = 'Lunas' if d['status_pembayaran'] else 'Belum Lunas'
+        pdf.cell(50, 8, status, 1, 1, 'C', fill=True)
+
+    pdf_bytes = pdf.output(dest='S')
+    if isinstance(pdf_bytes, bytearray):
+        pdf_bytes = bytes(pdf_bytes)
+    response = make_response(pdf_bytes)
+    response.headers['Content-Type'] = 'application/pdf'
+    response.headers['Content-Disposition'] = f'attachment; filename=data_transaksi_pasien_{id_pasien}.pdf'
+    return response
+
 @app.route('/bayar/<id_rawat>')
 def proses_bayar(id_rawat):
     conn = get_db_connection()
@@ -171,13 +259,13 @@ def tambah_transaksi():
     ]
 
     if request.method == 'POST':
-        id_pasien = request.form['id_pasien']
+        nama_pasien = request.form['nama_pasien']
         kelas = request.form['kelas']
         tgl_masuk = request.form['tgl_masuk']
         tgl_keluar = request.form['tgl_keluar']
         status_pembayaran = request.form['status_pembayaran']
 
-        if not id_pasien or not kelas or not tgl_masuk or not tgl_keluar or status_pembayaran not in ['0', '1']:
+        if not nama_pasien or not kelas or not tgl_masuk or not tgl_keluar or status_pembayaran not in ['0', '1']:
             flash('Semua field wajib diisi!')
             cursor.close()
             conn.close()
@@ -210,9 +298,9 @@ def tambah_transaksi():
             new_id += 1
 
         cursor.execute("""
-            INSERT INTO transaksi_faris (id_transaksi, id_pasien, total_biaya, status_pembayaran, tgl)
+            INSERT INTO transaksi_faris (id_transaksi, nama, total_biaya, status_pembayaran, tgl)
             VALUES (%s, %s, %s, %s, %s)
-        """, (new_id, id_pasien, total_biaya, status_pembayaran, tgl_keluar))
+        """, (new_id, nama_pasien, total_biaya, status_pembayaran, tgl_keluar))
 
         conn.commit()
         cursor.close()
@@ -221,12 +309,9 @@ def tambah_transaksi():
         flash(f"Data transaksi berhasil ditambahkan dengan ID TRX-00{new_id:02d}.")
         return redirect('/transaksi')
 
-    cursor.execute("SELECT * FROM pasien_faris")
-    pasien = cursor.fetchall()
-
     cursor.close()
     conn.close()
-    return render_template('tambah_transaksi.html', pasien=pasien, kelas_list=kelas_list)
+    return render_template('tambah_transaksi.html', kelas_list=kelas_list)
 
 if __name__ == '__main__':
     app.run(debug=True)
