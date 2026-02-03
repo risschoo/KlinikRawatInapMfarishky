@@ -1,0 +1,509 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Cinema</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #0d0d0d;
+            color: #fff;
+            line-height: 1.5;
+        }
+        
+        /* navbar */
+        nav {
+            background: #1a1a1a;
+            border-bottom: 1px solid #2a2a2a;
+            padding: 18px 4%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        
+        .logo {
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: #b8ff3d;
+        }
+        
+        .nav-links {
+            display: flex;
+            gap: 28px;
+            list-style: none;
+        }
+        
+        .nav-links a {
+            color: #888;
+            text-decoration: none;
+            font-size: 0.9rem;
+            font-weight: 500;
+            transition: color 0.2s;
+        }
+        
+        .nav-links a:hover,
+        .nav-links a.active {
+            color: #fff;
+        }
+        
+        .user-section {
+            display: flex;
+            align-items: center;
+            gap: 18px;
+        }
+        
+        .user-info {
+            color: #aaa;
+            font-size: 0.9rem;
+        }
+        
+        .logout-btn {
+            padding: 8px 18px;
+            background: #2a2a2a;
+            border: 1px solid #333;
+            border-radius: 7px;
+            color: #ddd;
+            text-decoration: none;
+            font-size: 0.88rem;
+            font-weight: 500;
+            transition: background 0.2s;
+        }
+        
+        .logout-btn:hover {
+            background: #333;
+        }
+        
+        /* main content */
+        .container {
+            max-width: 1320px;
+            margin: 0 auto;
+            padding: 35px 4%;
+        }
+        
+        .welcome {
+            margin-bottom: 42px;
+        }
+        
+        .welcome h1 {
+            font-size: 2.2rem;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+        
+        .welcome p {
+            color: #888;
+            font-size: 1.05rem;
+        }
+        
+        /* featured section */
+        .featured {
+            background: #1a1a1a;
+            border: 1px solid #2a2a2a;
+            border-radius: 14px;
+            padding: 0;
+            margin-bottom: 45px;
+            overflow: hidden;
+            position: relative;
+            height: 420px;
+        }
+        
+        .featured-bg {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #1e3a8a 0%, #312e81 100%);
+            opacity: 0.4;
+        }
+        
+        .featured-content {
+            position: relative;
+            z-index: 2;
+            padding: 48px 42px;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+        }
+        
+        .featured-content h2 {
+            font-size: 2.8rem;
+            font-weight: 700;
+            margin-bottom: 12px;
+        }
+        
+        .movie-meta {
+            display: flex;
+            gap: 18px;
+            margin-bottom: 18px;
+            font-size: 0.9rem;
+            color: #bbb;
+        }
+        
+        .btn-book {
+            display: inline-block;
+            padding: 12px 26px;
+            background: #b8ff3d;
+            color: #0d0d0d;
+            border: none;
+            border-radius: 7px;
+            font-weight: 600;
+            font-size: 0.94rem;
+            text-decoration: none;
+            cursor: pointer;
+            width: fit-content;
+            transition: background 0.2s, transform 0.15s;
+        }
+        
+        .btn-book:hover {
+            background: #a3e836;
+            transform: translateY(-1px);
+        }
+        
+        /* categories */
+        .categories {
+            display: flex;
+            gap: 11px;
+            margin-bottom: 38px;
+            overflow-x: auto;
+            padding-bottom: 5px;
+        }
+        
+        .categories::-webkit-scrollbar {
+            height: 4px;
+        }
+        
+        .categories::-webkit-scrollbar-thumb {
+            background: #333;
+            border-radius: 4px;
+        }
+        
+        .cat-chip {
+            padding: 9px 22px;
+            background: #2a2a2a;
+            border: 1px solid #333;
+            border-radius: 20px;
+            color: #aaa;
+            font-size: 0.88rem;
+            font-weight: 500;
+            white-space: nowrap;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .cat-chip:hover,
+        .cat-chip.active {
+            background: #b8ff3d;
+            color: #0d0d0d;
+            border-color: #b8ff3d;
+        }
+        
+        /* section header */
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 28px;
+        }
+        
+        .section-header h3 {
+            font-size: 1.6rem;
+            font-weight: 600;
+        }
+        
+        .view-all {
+            color: #b8ff3d;
+            text-decoration: none;
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+        
+        /* movies grid */
+        .movies {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+            gap: 22px;
+        }
+        
+        .movie-card {
+            background: #1a1a1a;
+            border: 1px solid #2a2a2a;
+            border-radius: 11px;
+            overflow: hidden;
+            cursor: pointer;
+            transition: transform 0.2s, border-color 0.2s;
+        }
+        
+        .movie-card:hover {
+            transform: translateY(-5px);
+            border-color: #3a3a3a;
+        }
+        
+        .poster {
+            width: 100%;
+            height: 310px;
+            background: #2a2a2a;
+            position: relative;
+        }
+
+        .poster img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        
+        .badge {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            padding: 5px 11px;
+            background: #b8ff3d;
+            color: #0d0d0d;
+            border-radius: 5px;
+            font-size: 0.72rem;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+        
+        .movie-info {
+            padding: 16px;
+        }
+        
+        .movie-info h4 {
+            font-size: 1.02rem;
+            font-weight: 600;
+            margin-bottom: 7px;
+            color: #fff;
+        }
+        
+        .genre {
+            color: #888;
+            font-size: 0.84rem;
+            margin-bottom: 6px;
+        }
+        
+        .rating {
+            color: #b8ff3d;
+            font-size: 0.88rem;
+            font-weight: 600;
+        }
+        
+        /* responsive */
+        @media (max-width: 768px) {
+            .nav-links {
+                display: none;
+            }
+            
+            .welcome h1 {
+                font-size: 1.85rem;
+            }
+            
+            .featured {
+                height: 360px;
+            }
+            
+            .featured-content {
+                padding: 32px 28px;
+            }
+            
+            .featured-content h2 {
+                font-size: 2rem;
+            }
+            
+            .movies {
+                grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+                gap: 16px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <nav>
+        <div class="logo">Cinema</div>
+        
+        <ul class="nav-links">
+            <li><a href="#" class="active">Beranda</a></li>
+            <li><a href="#">Film</a></li>
+            <li><a href="#">Jadwal</a></li>
+        </ul>
+        
+        <div class="user-section">
+            <span class="user-info">Halo, {{ username }}</span>
+            <a href="/logout" class="logout-btn">Logout</a>
+        </div>
+    </nav>
+    
+    <div class="container">
+        <div class="welcome">
+            <h1>Film Sedang Tayang</h1>
+            <p>Pilih film favorit kamu dan booking sekarang</p>
+        </div>
+        
+        <div class="featured">
+            <div class="featured-bg"></div>
+            <div class="featured-content">
+                <h2>The Dark Knight Returns</h2>
+                <div class="movie-meta">
+                    <span>Action, Drama</span>
+                    <span>165 menit</span>
+                    <span>⭐ 9.2</span>
+                </div>
+                <a href="#" class="btn-book">Booking Sekarang</a>
+            </div>
+        </div>
+        
+        <div class="categories">
+            <div class="cat-chip active">Semua</div>
+            <div class="cat-chip">Action</div>
+            <div class="cat-chip">Drama</div>
+            <div class="cat-chip">Horror</div>
+            <div class="cat-chip">Sci-Fi</div>
+            <div class="cat-chip">Comedy</div>
+            <div class="cat-chip">Romance</div>
+        </div>
+        
+        <div class="section-header">
+            <h3>Sedang Tayang</h3>
+            <a href="#" class="view-all">Lihat Semua →</a>
+        </div>
+        
+        <div class="movies">
+            <div class="movie-card">
+                <div class="poster">
+                    <img src="https://asset.tix.id/wp-content/uploads/2025/12/1995727660994613248.jpg" alt="Five Night At Freddy">
+                    <span class="badge">Hot</span>
+                </div>
+                <div class="movie-info">
+                    <h4>Five Night At Freddy</h4>
+                    <div class="genre">Action, Drama, Horor</div>
+                    <div class="rating">⭐ 9.0</div>
+                </div>
+            </div>
+            
+            <div class="movie-card">
+                <div class="poster">
+                    <img src="https://asset.tix.id/wp-content/uploads/2025/11/8018f5c0-d9bc-4850-9ce6-47f7b60c6839.webp" alt="Agak Laen">
+                </div>
+                <div class="movie-info">
+                    <h4>AGAK LAEN: MENYALA PANTIKU!</h4>
+                    <div class="genre">Comedy</div>
+                    <div class="rating">⭐ 9.5</div>
+                </div>
+            </div>
+            
+            <div class="movie-card">
+                <div class="poster">
+                    <img src="https://cdn.rri.co.id/berita/Bandung/o/1756597477601-The_Conjuring-_Last_Rites_official_teaser_&_poster_released_by__warnerbros_akan_tayang_di_biosko/zp96b4g1j3e7g4b.jpeg" alt="The Conjuring">
+                    <span class="badge">New</span>
+                </div>
+                <div class="movie-info">
+                    <h4>The Conjuring</h4>
+                    <div class="genre">Horror, Thriller</div>
+                    <div class="rating">⭐ 8.9</div>
+                </div>
+            </div>
+            
+            <div class="movie-card">
+                <div class="poster">
+                    <img src="https://asset.tix.id/wp-content/uploads/2025/11/70d18eed-ce9f-4ac7-b2e2-6e4db52aba39.webp" alt="Jujutsu Kaisen">
+                </div>
+                <div class="movie-info">
+                    <h4>Jujutsu Kaisen: Shibuya Incident</h4>
+                    <div class="genre">Action, Fantasy, Supernatural</div>
+                    <div class="rating">⭐ 8.9</div>
+                </div>
+            </div>
+            
+            <div class="movie-card">
+                <div class="poster">
+                    <img src="https://asset.tix.id/wp-content/uploads/2025/11/b4be76f4-d4eb-4909-a747-045756e2224e.webp" alt="ZOOTOPIA 2">
+                </div>
+                <div class="movie-info">
+                    <h4>ZOOTOPIA 2</h4>
+                    <div class="genre">Drama, Comedy</div>
+                    <div class="rating">⭐ 9.2</div>
+                </div>
+            </div>
+            
+            <div class="movie-card">
+                <div class="poster">
+                    <img src="https://image.tmdb.org/t/p/original/zzpxuEXS1azwhqfvtacLtScixbS.jpg" alt="Pengabdi Setan 2">
+                </div>
+                <div class="movie-info">
+                    <h4>Pengabdi Setan 2</h4>
+                    <div class="genre">Horor, Action, Crime</div>
+                    <div class="rating">⭐ 8.9</div>
+                </div>
+            </div>
+            
+            <div class="movie-card">
+                <div class="poster">
+                    <img src="https://asset.tix.id/wp-content/uploads/2025/11/adef793b-1ab1-46f0-92d8-7de466a8b289.webp" alt="RIBA">
+                </div>
+                <div class="movie-info">
+                    <h4>RIBA</h4>
+                    <div class="genre">Horor, Action, Drama</div>
+                    <div class="rating">⭐ 8.1</div>
+                </div>
+            </div>
+            
+            <div class="movie-card">
+                <div class="poster">
+                    <img src="https://asset.tix.id/wp-content/uploads/2025/11/f6a6d596-d4ee-412f-96a9-ea6600bc98a8.webp" alt="Wasiat Warisan">
+                </div>
+                <div class="movie-info">
+                    <h4>Wasiat Warisan</h4>
+                    <div class="genre">Musical, Romance</div>
+                    <div class="rating">⭐ 8.0</div>
+                </div>
+            </div>
+
+             <div class="movie-card">
+                <div class="poster">
+                    <img src="https://asset.tix.id/wp-content/uploads/2025/11/d0dd7400-9ce4-424e-9137-8518b7bbba47.webp" alt="Dayang Wingit Jumat Kliwon">
+                </div>
+                <div class="movie-info">
+                    <h4>Danyang Wingit Jumat Kliwon</h4>
+                    <div class="genre">Horor, Drama</div>
+                    <div class="rating">⭐ 8.1</div>
+                </div>
+            </div>
+
+             <div class="movie-card">
+                <div class="poster">
+                    <img src="https://asset.tix.id/wp-content/uploads/2025/11/3a95b1bf-26af-414b-bb0a-b66a58ba5c52.webp" alt="Wicked: For Good">
+                </div>
+                <div class="movie-info">
+                    <h4>Wicked: For Good</h4>
+                    <div class="genre">Supernatural, Comedy</div>
+                    <div class="rating">⭐ 9.1</div>
+                </div>
+            </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // category filter
+        document.querySelectorAll('.cat-chip').forEach(chip => {
+            chip.addEventListener('click', function() {
+                document.querySelectorAll('.cat-chip').forEach(c => c.classList.remove('active'));
+                this.classList.add('active');
+            });
+        });
+    </script>
+</body>
+</html>
